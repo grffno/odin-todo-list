@@ -8,8 +8,8 @@ class Project {
     this.todos.push(todo);
   }
 
-  removeTodo(todoTitle) {
-    this.todos = this.todos.filter((todo) => todo.title !== todoTitle);
+  removeTodo(todoId) {
+    this.todos = this.todos.filter((todo) => todo.id !== todoId);
   }
 
   getTodos() {
