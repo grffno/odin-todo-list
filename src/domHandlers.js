@@ -107,14 +107,18 @@ function createTodoCard(todo) {
   const todoDescription = createElement("p", { textContent: todo.description });
   const todoDueDate = createElement("p", { textContent: todo.dueDate });
   const todoPriority = createElement("p", { textContent: todo.priority });
+  const todoDelete = createElement("button", { textContent: "Delete" });
   const todoCardDiv = createElement(
     "div",
-    { className: "todo" },
+    { className: "todo", id: todo.id },
     todoTitle,
     todoDescription,
     todoDueDate,
-    todoPriority
+    todoPriority,
+    todoDelete
   );
+
+  todoDelete.addEventListener("click", handleDeleteTodo);
 
   return todoCardDiv;
 }
@@ -154,6 +158,15 @@ function handleNewTodo(event) {
   document.getElementById("todo-description").value = "";
   document.getElementById("todo-due-date").value = "";
   document.getElementById("todo-priority").value = "";
+}
+
+function handleDeleteTodo(event) {
+  const todoCardDiv = event.target.closest(".todo");
+  const todoId = parseInt(todoCardDiv.id);
+
+  const currentProject = appInstance.getCurrentProject();
+  currentProject.removeTodo(todoId);
+  todoCardDiv.remove();
 }
 
 function handleNewProject(event) {
