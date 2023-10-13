@@ -6,10 +6,17 @@ class App {
   constructor() {
     this.projects = [];
     this.currentProject = null;
+    this.currentId = 0;
+  }
+
+  getNewId() {
+    this.currentId += 1;
+    return this.currentId;
   }
 
   createNewTodo(title, description, dueDate, priority, project) {
-    const todo = new Todo(title, description, dueDate, priority);
+    const id = this.getNewId();
+    const todo = new Todo(id, title, description, dueDate, priority);
     project.addTodo(todo);
   }
 
