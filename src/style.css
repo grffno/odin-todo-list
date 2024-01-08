@@ -150,6 +150,11 @@ button {
   font-size: 1.3rem;
 }
 
+input {
+  border: none;
+  outline: none;
+}
+
 #app {
   resize: both;
   overflow: auto;
@@ -176,6 +181,10 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: left;
+}
+
+#todo-due-date {
+  color: #888;
 }
 
 .project-btn-div {
@@ -246,4 +255,19 @@ button {
 
 .modal-btn {
   margin-right: 8px;
+}
+
+.new-todo-btn {
+  border-radius: 100px;
+  border: 1px solid #333;
+  background-color: #fefefe;
+  font-size: 18px;
+  color: #333;
+}
+
+.todo-form,
+.todo-card {
+  margin: 8px 0 8px 0;
+  /* padding: 8px; */
+  border-bottom: 1px solid #888;
 }

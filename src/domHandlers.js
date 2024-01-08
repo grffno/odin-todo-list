@@ -76,13 +76,14 @@ function loadProjects() {
   return projectsDiv;
 }
 
-function loadInput(labelText, placeholder, labelId) {
+function loadInput(labelText, placeholder, labelId, type = "text") {
   const label = createElement("label", { textContent: labelText });
   const input = createElement("input", {
-    type: "text",
+    type: type,
     placeholder: placeholder,
     id: labelId,
   });
+
   return createElement("div", {}, label, input);
 }
 
@@ -146,14 +147,10 @@ function loadTodoBtn() {
 }
 
 function loadTodoForm() {
-  const titleDiv = loadInput("Title:", "Buy Groceries", "todo-title");
-  const descriptionDiv = loadInput(
-    "Description:",
-    "Apples, Oranges, Bananas...",
-    "todo-description"
-  );
-  const dueDateDiv = loadInput("Date Due:", "MM/DD/YYYY", "todo-due-date");
-  const priorityDiv = loadInput("Priority:", "High", "todo-priority");
+  const titleDiv = loadInput("", "Title", "todo-title");
+  const descriptionDiv = loadInput("", "Notes", "todo-description");
+  const dueDateDiv = loadInput("", "Today's Date", "todo-due-date", "date");
+  const priorityDiv = loadInput("", "Priority", "todo-priority", "number");
 
   const submitBtn = createElement("button", { textContent: "Submit" });
   submitBtn.addEventListener("click", handleNewTodo);
@@ -222,15 +219,13 @@ function handleNewTodo(event) {
   loadTodos();
 
   // Clear inputs
-  document.getElementById("todo-title").value = "";
-  document.getElementById("todo-description").value = "";
-  document.getElementById("todo-due-date").value = "";
-  document.getElementById("todo-priority").value = "";
+  document.getElementById("todo-form").remove();
 }
 
 function handleAddTodo(event) {
   const mainDiv = document.getElementById("main");
   mainDiv.appendChild(loadTodoForm());
+  document.getElementById("todo-title").focus();
 }
 
 function handleDeleteTodo(event) {
