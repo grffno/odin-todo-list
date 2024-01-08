@@ -43,7 +43,7 @@ function renderPage() {
       className: "main",
     })
   );
-  mainDiv.appendChild(loadTodoForm());
+  mainDiv.appendChild(loadTodoBtn());
   const todosDiv = mainDiv.appendChild(
     createElement("div", { id: "todos", className: "todos" })
   );
@@ -136,6 +136,15 @@ function loadNewProjectsModal() {
   return modal;
 }
 
+function loadTodoBtn() {
+  const newTodoBtn = createElement("button", {
+    textContent: "+",
+    className: "new-todo-btn",
+  });
+  newTodoBtn.addEventListener("click", handleAddTodo);
+  return newTodoBtn;
+}
+
 function loadTodoForm() {
   const titleDiv = loadInput("Title:", "Buy Groceries", "todo-title");
   const descriptionDiv = loadInput(
@@ -217,6 +226,11 @@ function handleNewTodo(event) {
   document.getElementById("todo-description").value = "";
   document.getElementById("todo-due-date").value = "";
   document.getElementById("todo-priority").value = "";
+}
+
+function handleAddTodo(event) {
+  const mainDiv = document.getElementById("main");
+  mainDiv.appendChild(loadTodoForm());
 }
 
 function handleDeleteTodo(event) {
