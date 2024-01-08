@@ -26,6 +26,11 @@ class App {
     this.setCurrentProject(name);
   }
 
+  removeProject(name) {
+    const indexToRemove = this.projects.findIndex((obj) => obj.name === name);
+    this.projects.splice(indexToRemove, 1);
+  }
+
   getProject(name) {
     return this.projects.find((project) => project.name === name);
   }

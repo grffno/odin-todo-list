@@ -25,26 +25,51 @@ function renderPage() {
   appInstance.createNewProject("My First Project");
   console.log("current project:", appInstance.getCurrentProject());
 
-  // Load divs
-  appContainer.appendChild(loadTodoForm());
-  appContainer.appendChild(loadNewProjectsForm());
-  appContainer.appendChild(
-    createElement("div", { id: "projectsDiv", className: "projects" })
+  // Create sidebar
+  const sidebarDiv = appContainer.appendChild(
+    createElement("div", { id: "sidebar", className: "sidebar" })
   );
-  appContainer.appendChild(createElement("div", { id: "todosDiv" }));
+  const newProjectsModal = appContainer.appendChild(loadNewProjectsModal());
+  const projectsDiv = sidebarDiv.appendChild(
+    createElement("div", { id: "projects", className: "projects" })
+  );
 
   loadProjects();
+
+  // Create main area
+  const mainDiv = appContainer.appendChild(
+    createElement("div", {
+      id: "main",
+      className: "main",
+    })
+  );
+  mainDiv.appendChild(loadTodoForm());
+  const todosDiv = mainDiv.appendChild(
+    createElement("div", { id: "todos", className: "todos" })
+  );
 }
 
 function loadProjects() {
-  const projectsDiv = document.getElementById("projectsDiv");
+  const projectsDiv = document.getElementById("projects");
   projectsDiv.innerHTML = "";
+  const newProjectsBtn = projectsDiv.appendChild(loadNewProjectsBtn());
 
   appInstance.projects.forEach((project) => {
+    const projectButtonDiv = createElement("div", {
+      className: "project-btn-div",
+    });
     const projectButton = createElement("button", {
       textContent: project.name,
+      className: "project-btn",
     });
-    projectsDiv.appendChild(projectButton);
+    const projectDeleteBtn = createElement("button", {
+      textContent: "X",
+      className: "project-delete-btn",
+    });
+    projectsDiv.appendChild(projectButtonDiv);
+    projectButtonDiv.appendChild(projectButton);
+    projectButtonDiv.appendChild(projectDeleteBtn);
+    projectDeleteBtn.addEventListener("click", handleProjectDeleted);
     projectButton.addEventListener("click", handleProjectSelected);
   });
 
@@ -61,21 +86,54 @@ function loadInput(labelText, placeholder, labelId) {
   return createElement("div", {}, label, input);
 }
 
-function loadNewProjectsForm() {
-  const newProjectDiv = loadInput(null, "New Project Name", "new-project-name");
-  newProjectDiv.required = true;
-
-  const newProjectBtn = createElement("button", {
-    textContent: "Add New Project",
+function loadNewProjectsBtn() {
+  // Create main modal button
+  const btn = createElement("button", {
+    textContent: "+ Add Project",
+    id: "new-project-btn",
+    className: "project-btn",
   });
-  newProjectBtn.addEventListener("click", handleNewProject);
 
-  return createElement(
-    "form",
-    { className: "newProjectForm" },
-    newProjectDiv,
-    newProjectBtn
-  );
+  btn.addEventListener("click", handleNewProjectsBtn);
+
+  return btn;
+}
+
+function loadNewProjectsModal() {
+  // Create the modal structure
+  const modal = createElement("div", {
+    id: "new-project-modal",
+    className: "modal",
+  });
+
+  // Modal content
+  const modalContent = createElement("div", { className: "modal-content" });
+
+  // New project input
+  const input = loadInput("Project Name:", "Project Name", "new-project-name");
+  input.className = "modal-label";
+  modalContent.appendChild(input);
+
+  // Modal OK button
+  const modalOkBtn = createElement("button", {
+    className: "modal-btn",
+    innerHTML: "OK",
+  });
+  modalContent.appendChild(modalOkBtn);
+  modalOkBtn.addEventListener("click", handleNewProjectsModalOkBtn);
+
+  // Modal close button
+  const modalCloseBtn = createElement("button", {
+    className: "modal-btn",
+    innerHTML: "Cancel",
+  });
+  modalContent.appendChild(modalCloseBtn);
+  modalCloseBtn.addEventListener("click", handleNewProjectsModalCloseBtn);
+
+  // Append modal content to modal
+  modal.appendChild(modalContent);
+
+  return modal;
 }
 
 function loadTodoForm() {
@@ -110,7 +168,7 @@ function createTodoCard(todo) {
   const todoDelete = createElement("button", { textContent: "Delete" });
   const todoCardDiv = createElement(
     "div",
-    { className: "todo", id: todo.id },
+    { className: "todo-card", id: todo.id },
     todoTitle,
     todoDescription,
     todoDueDate,
@@ -124,6 +182,7 @@ function createTodoCard(todo) {
 }
 
 function loadTodos() {
+  const todosDiv = document.getElementById("todos");
   todosDiv.innerHTML = "";
 
   const currentProject = appInstance.getCurrentProject();
@@ -161,7 +220,7 @@ function handleNewTodo(event) {
 }
 
 function handleDeleteTodo(event) {
-  const todoCardDiv = event.target.closest(".todo");
+  const todoCardDiv = event.target.closest(".todo-card");
   const todoId = parseInt(todoCardDiv.id);
 
   const currentProject = appInstance.getCurrentProject();
@@ -169,20 +228,49 @@ function handleDeleteTodo(event) {
   todoCardDiv.remove();
 }
 
-function handleNewProject(event) {
+function handleNewProjectsBtn(event) {
   event.preventDefault();
-  const name = document.getElementById("new-project-name").value;
-  if (name && !appInstance.getProject(name)) {
-    appInstance.createNewProject(name);
-    loadProjects();
-  }
+  const modal = document.getElementById("new-project-modal");
+  modal.style.display = "flex";
+}
 
-  // Clear input
-  document.getElementById("new-project-name").value = "";
+function handleProjectDeleted(event) {
+  alert("Are you sure you want to delete this project and all its contents?");
+  console.log(event.target.previousElementSibling.textContent);
+  appInstance.removeProject(event.target.previousElementSibling.textContent);
+  loadProjects();
+}
+
+function handleNewProjectsModalCloseBtn(event) {
+  event.preventDefault();
+  const modal = document.getElementById("new-project-modal");
+  modal.style.display = "none";
+}
+
+function handleNewProjectsModalOkBtn(event) {
+  event.preventDefault();
+  const modal = document.getElementById("new-project-modal");
+  const newProjectName = document.getElementById("new-project-name").value;
+  appInstance.createNewProject(newProjectName);
+  modal.style.display = "none";
+
+  loadProjects();
 }
 
 function handleProjectSelected(event) {
+  // Remove "project-btn-clicked" from all buttons
+  const projectBtns = document.querySelectorAll(".project-btn");
+  projectBtns.forEach((btn) => {
+    btn.classList.remove("project-btn-clicked");
+  });
+
+  // Add "project-btn-clicked" to the clicked button
+  event.target.classList.add("project-btn-clicked");
+
+  // Set the current project
   appInstance.setCurrentProject(event.target.textContent);
+
+  // Load todos for the current project
   loadTodos();
 }
 
