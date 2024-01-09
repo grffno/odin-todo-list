@@ -2,6 +2,12 @@ import App from "./app";
 
 let appInstance = new App();
 
+const priorityColors = {
+  Low: "#ddffdd", // Light Green
+  Medium: "#ffffdd", // Gold
+  High: "#ffdddd", // Tomato Red
+};
+
 // HANDLE DOM ELEMENTS
 
 // Utility function for generating DOM elements
@@ -121,7 +127,7 @@ function loadNewProjectsModal() {
     innerHTML: "OK",
   });
   modalContent.appendChild(modalOkBtn);
-  modalOkBtn.addEventListener("click", handleNewProjectsModalOkBtn);
+  modalOkBtn.addEventListener("click", handleNewProjectsModalBtn);
 
   // Modal close button
   const modalCloseBtn = createElement("button", {
@@ -146,11 +152,45 @@ function loadTodoBtn() {
   return newTodoBtn;
 }
 
+function formatDate(dateString) {
+  if (!dateString) return "";
+
+  // Split the date string and create a new date object
+  const [year, month, day] = dateString
+    .split("-")
+    .map((part) => parseInt(part, 10));
+  const dateObj = new Date(year, month - 1, day);
+
+  // Format the date as mm/dd/yyyy
+  let formattedMonth = "" + (dateObj.getMonth() + 1);
+  let formattedDay = "" + dateObj.getDate();
+  const formattedYear = dateObj.getFullYear();
+
+  if (formattedMonth.length < 2) formattedMonth = "0" + formattedMonth;
+  if (formattedDay.length < 2) formattedDay = "0" + formattedDay;
+
+  return [formattedMonth, formattedDay, formattedYear].join("/");
+}
+
 function loadTodoForm() {
   const titleDiv = loadInput("", "Title", "todo-title");
-  const descriptionDiv = loadInput("", "Notes", "todo-description");
+  const notesDiv = loadInput("", "Notes", "todo-notes");
   const dueDateDiv = loadInput("", "Today's Date", "todo-due-date", "date");
-  const priorityDiv = loadInput("", "Priority", "todo-priority", "number");
+
+  // Priority Dropdown
+  const priorityDiv = createElement("div");
+  const priorityLabel = createElement("label", { textContent: "Priority:" });
+  const prioritySelect = createElement("select", { id: "todo-priority" });
+  const priorities = ["Low", "Medium", "High"];
+  priorities.forEach((level) => {
+    const option = createElement("option", {
+      value: level,
+      textContent: level,
+    });
+    prioritySelect.appendChild(option);
+  });
+  priorityDiv.appendChild(priorityLabel);
+  priorityDiv.appendChild(prioritySelect);
 
   const submitBtn = createElement("button", { textContent: "Submit" });
   submitBtn.addEventListener("click", handleNewTodo);
@@ -159,7 +199,7 @@ function loadTodoForm() {
     "form",
     { className: "todo-form", id: "todo-form" },
     titleDiv,
-    descriptionDiv,
+    notesDiv,
     dueDateDiv,
     priorityDiv,
     submitBtn
@@ -167,22 +207,91 @@ function loadTodoForm() {
 }
 
 function createTodoCard(todo) {
-  const todoTitle = createElement("h3", { textContent: todo.title });
-  const todoDescription = createElement("p", { textContent: todo.description });
-  const todoDueDate = createElement("p", { textContent: todo.dueDate });
-  const todoPriority = createElement("p", { textContent: todo.priority });
-  const todoDelete = createElement("button", { textContent: "Delete" });
+  let todoTitle = "";
+  let todoNotes = "";
+  let todoDueDate = "";
+  let todoPriority = "";
+
+  // Title
+  todo.title !== ""
+    ? (todoTitle = createElement("div", {
+        textContent: todo.title,
+      }))
+    : (todoTitle = createElement("div", {
+        textContent: "Title",
+        className: "hidden",
+      }));
+
+  // Notes
+  todo.notes !== ""
+    ? (todoNotes = createElement("div", {
+        textContent: todo.notes,
+      }))
+    : (todoNotes = createElement("div", {
+        textContent: "Notes",
+        className: "hidden",
+      }));
+
+  // Due Date
+  todo.dueDate !== ""
+    ? (todoDueDate = createElement("div", {
+        textContent: formatDate(todo.dueDate),
+      }))
+    : (todoDueDate = createElement("div", {
+        textContent: "Due Date",
+        className: "hidden",
+      }));
+
+  // Priority
+  const todoPriorityColor = priorityColors[todo.priority] || "#FFFFFF"; // Default to white if no priority set
+
+  todo.priority !== ""
+    ? (todoPriority = createElement("div", {
+        textContent: todo.priority,
+        style: `background-color: ${todoPriorityColor};`,
+      }))
+    : (todoPriority = createElement("div", {
+        textContent: "Priority",
+        className: "hidden",
+      }));
+
+  // Delete Button
+  const todoDelete = createElement("button", {
+    textContent: "X",
+    className: "todo-delete-btn",
+  });
+
+  // Todo Details Container
+  const todoDetailsContainer = createElement(
+    "div",
+    {
+      className: "todo-details-container",
+    },
+    todoTitle,
+    todoNotes,
+    todoDueDate,
+    todoPriority
+  );
+
+  // Todo Card Div
   const todoCardDiv = createElement(
     "div",
-    { className: "todo-card", id: todo.id },
-    todoTitle,
-    todoDescription,
-    todoDueDate,
-    todoPriority,
+    {
+      className: "todo-card",
+      id: todo.id,
+      style: `background-color: ${todoPriorityColor};`,
+    },
+    todoDetailsContainer,
     todoDelete
   );
 
+  // Event Listeners
   todoDelete.addEventListener("click", handleDeleteTodo);
+  todoCardDiv.addEventListener("click", handleTodoClick);
+  todoTitle.addEventListener("click", handleTodoTitleClick);
+  todoNotes.addEventListener("click", handleTodoNotesClick);
+  todoDueDate.addEventListener("click", handleTodoDueDateClick);
+  todoPriority.addEventListener("click", handleTodoPriorityClick);
 
   return todoCardDiv;
 }
@@ -193,39 +302,50 @@ function loadTodos() {
 
   const currentProject = appInstance.getCurrentProject();
   currentProject.todos.forEach((todo) => {
+    console.log(todo);
     const todoCard = createTodoCard(todo);
     todosDiv.appendChild(todoCard);
   });
 }
 
 // EVENT HANDLERS
+// TODO HANDLERS
 function handleNewTodo(event) {
   event.preventDefault();
 
   const title = document.getElementById("todo-title").value;
-  const description = document.getElementById("todo-description").value;
+  const notes = document.getElementById("todo-notes").value;
   const dueDate = document.getElementById("todo-due-date").value;
   const priority = document.getElementById("todo-priority").value;
 
   const currentProject = appInstance.getCurrentProject();
 
-  appInstance.createNewTodo(
-    title,
-    description,
-    dueDate,
-    priority,
-    currentProject
-  );
+  appInstance.createNewTodo(title, notes, dueDate, priority, currentProject);
   loadTodos();
 
   // Clear inputs
   document.getElementById("todo-form").remove();
 }
 
-function handleAddTodo(event) {
+function handleAddTodo() {
   const mainDiv = document.getElementById("main");
-  mainDiv.appendChild(loadTodoForm());
+  const form = mainDiv.appendChild(loadTodoForm());
   document.getElementById("todo-title").focus();
+}
+
+function handleTodoClick(event) {
+  // Check if the click is on the todo card but not on a button or input
+  if (
+    event.target.className.includes("todo-card") &&
+    !event.target.closest("button, input, select")
+  ) {
+    const todoDiv = event.target;
+    const hiddenDivs = todoDiv.querySelectorAll("div.hidden");
+    hiddenDivs.forEach((div) => {
+      div.classList.remove("hidden");
+      div.classList.add("show");
+    });
+  }
 }
 
 function handleDeleteTodo(event) {
@@ -237,6 +357,147 @@ function handleDeleteTodo(event) {
   todoCardDiv.remove();
 }
 
+function handleTodoTitleClick(event) {
+  const todoId = parseInt(event.target.parentElement.parentElement.id);
+  const todoTextContents = event.target.textContent;
+  const input = createElement("input", {
+    value: todoTextContents,
+    type: "text",
+    id: "todo-title-edit",
+  });
+  event.target.replaceWith(input);
+  input.focus();
+  input.select();
+
+  // Handle losing focus, replace input with the updated title
+  input.addEventListener("blur", function () {
+    event.target.classList.remove("show");
+    event.target.classList.add("full");
+    const newTitle = input.value;
+    event.target.textContent = newTitle;
+    input.replaceWith(event.target);
+    appInstance.updateTodoTitle(todoId, newTitle);
+    document
+      .querySelectorAll(".show")
+      .forEach((item) => item.classList.add("hidden"));
+  });
+}
+
+function handleTodoNotesClick(event) {
+  const todoId = parseInt(event.target.parentElement.parentElement.id);
+  const todoTextContents = event.target.textContent;
+  const input = createElement("input", {
+    value: todoTextContents,
+    type: "text",
+    id: "todo-notes-edit",
+  });
+  event.target.replaceWith(input);
+  input.focus();
+  input.select();
+
+  // Handle losing focus, replace input with the updated title
+  input.addEventListener("blur", function () {
+    event.target.classList.remove("show");
+    event.target.classList.add("full");
+    const newNotes = input.value;
+    event.target.textContent = newNotes;
+    input.replaceWith(event.target);
+    appInstance.updateTodoNotes(todoId, newNotes);
+    document
+      .querySelectorAll(".show")
+      .forEach((item) => item.classList.add("hidden"));
+  });
+}
+
+function handleTodoDueDateClick(event) {
+  const todoId = parseInt(event.target.parentElement.parentElement.id);
+  const todoTextContents = event.target.textContent;
+
+  // Convert displayed date back to yyyy-mm-dd format for editing
+  const formattedDateForEdit = todoTextContents
+    ? formatDateForEdit(todoTextContents)
+    : "";
+
+  const input = createElement("input", {
+    value: formattedDateForEdit,
+    type: "date",
+    id: "todo-due-date-edit",
+  });
+  event.target.replaceWith(input);
+  input.focus();
+  input.select();
+
+  input.addEventListener("blur", function () {
+    event.target.classList.remove("show");
+    event.target.classList.add("full");
+    // Format the date to mm/dd/yyyy for display
+    const newDueDateDisplay = formatDate(input.value);
+
+    event.target.textContent = newDueDateDisplay;
+    input.replaceWith(event.target);
+
+    // Make sure to save the date in yyyy-mm-dd format
+    appInstance.updateTodoDueDate(todoId, input.value);
+    document
+      .querySelectorAll(".show")
+      .forEach((item) => item.classList.add("hidden"));
+  });
+}
+
+// Helper function to convert mm/dd/yyyy to yyyy-mm-dd
+function formatDateForEdit(dateString) {
+  const parts = dateString.split("/");
+  return parts.length === 3
+    ? `${parts[2]}-${parts[0].padStart(2, "0")}-${parts[1].padStart(2, "0")}`
+    : "";
+}
+
+function handleTodoPriorityClick(event) {
+  const todoId = parseInt(event.target.parentElement.parentElement.id);
+  const currentPriority = event.target.textContent;
+  const select = createElement("select", { id: "todo-priority-edit" });
+  const priorities = ["Low", "Medium", "High"];
+
+  // Create and append options to the select element
+  priorities.forEach((level) => {
+    const option = createElement("option", {
+      value: level,
+      textContent: level,
+    });
+    if (level === currentPriority) {
+      option.selected = true;
+    }
+    select.appendChild(option);
+  });
+
+  // Replace the current priority text with the select dropdown
+  event.target.replaceWith(select);
+  select.focus();
+
+  // Event listener for when a new priority is selected
+  select.addEventListener("change", function () {
+    event.target.classList.remove("show");
+    event.target.classList.add("full");
+    const newPriority = select.value;
+    event.target.textContent = newPriority;
+    select.replaceWith(event.target);
+
+    // Update the priority in the app data structure
+    appInstance.updateTodoPriority(todoId, newPriority);
+
+    // Update the background color of the priority div and the todo card
+    const priorityDiv = event.target; // The div that shows the priority
+    const todoCardDiv = event.target.closest(".todo-card");
+    const newColor = priorityColors[newPriority] || "#FFFFFF";
+    priorityDiv.style.backgroundColor = newColor;
+    todoCardDiv.style.backgroundColor = newColor;
+    document
+      .querySelectorAll(".show")
+      .forEach((item) => item.classList.add("hidden"));
+  });
+}
+
+// PROJECT HANDLERS
 function handleNewProjectsBtn(event) {
   event.preventDefault();
   const modal = document.getElementById("new-project-modal");
@@ -256,7 +517,7 @@ function handleNewProjectsModalCloseBtn(event) {
   modal.style.display = "none";
 }
 
-function handleNewProjectsModalOkBtn(event) {
+function handleNewProjectsModalBtn(event) {
   event.preventDefault();
   const modal = document.getElementById("new-project-modal");
   const newProjectName = document.getElementById("new-project-name").value;

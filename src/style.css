@@ -144,6 +144,7 @@ html {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 1.3rem;
   height: 100%;
+  color: #333;
 }
 
 button {
@@ -265,9 +266,41 @@ input {
   color: #333;
 }
 
+.todo-card {
+  display: flex;
+  justify-content: space-between;
+}
+
 .todo-form,
 .todo-card {
+  padding: 8px;
   margin: 8px 0 8px 0;
-  /* padding: 8px; */
-  border-bottom: 1px solid #888;
+}
+
+.todo-details-container > div {
+  padding: 2px;
+}
+
+.todo-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  color: #333;
+}
+
+.todo-delete-btn:hover {
+  color: red;
+}
+
+.hidden {
+  display: none;
+}
+
+.show {
+  color: #888;
+}
+
+.full {
+  color: #333;
 }

@@ -14,10 +14,48 @@ class App {
     return this.currentId;
   }
 
-  createNewTodo(title, description, dueDate, priority, project) {
+  createNewTodo(title, notes, dueDate, priority, project) {
     const id = this.getNewId();
-    const todo = new Todo(id, title, description, dueDate, priority);
+    const todo = new Todo(id, title, notes, dueDate, priority);
     project.addTodo(todo);
+  }
+
+  getTodoById(todoId) {
+    for (const project of this.projects) {
+      const todo = project.todos.find((todo) => todo.id === todoId);
+      if (todo) {
+        return todo;
+      }
+    }
+    return null; // Return null if todo is not found
+  }
+
+  updateTodoTitle(todoId, newTitle) {
+    const todo = this.getTodoById(todoId);
+    if (todo) {
+      todo.title = newTitle;
+    }
+  }
+
+  updateTodoNotes(todoId, newNotes) {
+    const todo = this.getTodoById(todoId);
+    if (todo) {
+      todo.notes = newNotes;
+    }
+  }
+
+  updateTodoDueDate(todoId, newDueDate) {
+    const todo = this.getTodoById(todoId);
+    if (todo) {
+      todo.dueDate = newDueDate;
+    }
+  }
+
+  updateTodoPriority(todoId, newPriority) {
+    const todo = this.getTodoById(todoId);
+    if (todo) {
+      todo.priority = newPriority;
+    }
   }
 
   createNewProject(name) {
