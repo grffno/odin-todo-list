@@ -1,4 +1,5 @@
 import App from "./app";
+import { format, parse, parseISO } from "date-fns";
 
 let appInstance = new App();
 
@@ -154,22 +155,11 @@ function loadTodoBtn() {
 
 function formatDate(dateString) {
   if (!dateString) return "";
-
-  // Split the date string and create a new date object
-  const [year, month, day] = dateString
-    .split("-")
-    .map((part) => parseInt(part, 10));
-  const dateObj = new Date(year, month - 1, day);
-
-  // Format the date as mm/dd/yyyy
-  let formattedMonth = "" + (dateObj.getMonth() + 1);
-  let formattedDay = "" + dateObj.getDate();
-  const formattedYear = dateObj.getFullYear();
-
-  if (formattedMonth.length < 2) formattedMonth = "0" + formattedMonth;
-  if (formattedDay.length < 2) formattedDay = "0" + formattedDay;
-
-  return [formattedMonth, formattedDay, formattedYear].join("/");
+  const dateStringParts = dateString.split("-");
+  const dateStringParsed = `${dateStringParts[0]}-${dateStringParts[1]}-${dateStringParts[2]}`;
+  const formattedDate = format(parseISO(dateStringParsed), "MM/dd/yyyy");
+  console.log(formattedDate);
+  return formattedDate;
 }
 
 function loadTodoForm() {
@@ -413,13 +403,8 @@ function handleTodoDueDateClick(event) {
   const todoId = parseInt(event.target.parentElement.parentElement.id);
   const todoTextContents = event.target.textContent;
 
-  // Convert displayed date back to yyyy-mm-dd format for editing
-  const formattedDateForEdit = todoTextContents
-    ? formatDateForEdit(todoTextContents)
-    : "";
-
   const input = createElement("input", {
-    value: formattedDateForEdit,
+    value: todoTextContents,
     type: "date",
     id: "todo-due-date-edit",
   });
@@ -442,14 +427,6 @@ function handleTodoDueDateClick(event) {
       .querySelectorAll(".show")
       .forEach((item) => item.classList.add("hidden"));
   });
-}
-
-// Helper function to convert mm/dd/yyyy to yyyy-mm-dd
-function formatDateForEdit(dateString) {
-  const parts = dateString.split("/");
-  return parts.length === 3
-    ? `${parts[2]}-${parts[0].padStart(2, "0")}-${parts[1].padStart(2, "0")}`
-    : "";
 }
 
 function handleTodoPriorityClick(event) {
