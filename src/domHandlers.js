@@ -154,12 +154,8 @@ function loadTodoBtn() {
 }
 
 function formatDate(dateString) {
-  if (!dateString) return "";
-  const dateStringParts = dateString.split("-");
-  const dateStringParsed = `${dateStringParts[0]}-${dateStringParts[1]}-${dateStringParts[2]}`;
-  const formattedDate = format(parseISO(dateStringParsed), "MM/dd/yyyy");
-  console.log(formattedDate);
-  return formattedDate;
+  if (!dateString) return "mm/dd/yyyy";
+  return format(parseISO(dateString), "MM/dd/yyyy");
 }
 
 function loadTodoForm() {
@@ -421,7 +417,6 @@ function handleTodoDueDateClick(event) {
     event.target.textContent = newDueDateDisplay;
     input.replaceWith(event.target);
 
-    // Make sure to save the date in yyyy-mm-dd format
     appInstance.updateTodoDueDate(todoId, input.value);
     document
       .querySelectorAll(".show")
