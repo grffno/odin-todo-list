@@ -29,8 +29,9 @@ function renderPage() {
   document.body.appendChild(appContainer);
 
   // Initialize Default Project
-  appInstance.createNewProject("My First Project");
-  console.log("current project:", appInstance.getCurrentProject());
+  if (appInstance.projects.length === 0) {
+    appInstance.createNewProject("My First Project");
+  }
 
   // Create sidebar
   const sidebarDiv = appContainer.appendChild(
@@ -311,12 +312,16 @@ function handleNewTodo(event) {
 
   // Clear inputs
   document.getElementById("todo-form").remove();
+
+  updateLocalStorage();
 }
 
 function handleAddTodo() {
   const mainDiv = document.getElementById("main");
   const form = mainDiv.appendChild(loadTodoForm());
   document.getElementById("todo-title").focus();
+
+  updateLocalStorage();
 }
 
 function handleTodoClick(event) {
@@ -341,6 +346,8 @@ function handleDeleteTodo(event) {
   const currentProject = appInstance.getCurrentProject();
   currentProject.removeTodo(todoId);
   todoCardDiv.remove();
+
+  updateLocalStorage();
 }
 
 function handleTodoTitleClick(event) {
@@ -367,6 +374,8 @@ function handleTodoTitleClick(event) {
       .querySelectorAll(".show")
       .forEach((item) => item.classList.add("hidden"));
   });
+
+  updateLocalStorage();
 }
 
 function handleTodoNotesClick(event) {
@@ -422,6 +431,8 @@ function handleTodoDueDateClick(event) {
       .querySelectorAll(".show")
       .forEach((item) => item.classList.add("hidden"));
   });
+
+  updateLocalStorage();
 }
 
 function handleTodoPriorityClick(event) {
@@ -467,6 +478,8 @@ function handleTodoPriorityClick(event) {
       .querySelectorAll(".show")
       .forEach((item) => item.classList.add("hidden"));
   });
+
+  updateLocalStorage();
 }
 
 // PROJECT HANDLERS
@@ -481,6 +494,8 @@ function handleProjectDeleted(event) {
   console.log(event.target.previousElementSibling.textContent);
   appInstance.removeProject(event.target.previousElementSibling.textContent);
   loadProjects();
+
+  updateLocalStorage();
 }
 
 function handleNewProjectsModalCloseBtn(event) {
@@ -497,6 +512,8 @@ function handleNewProjectsModalBtn(event) {
   modal.style.display = "none";
 
   loadProjects();
+
+  updateLocalStorage();
 }
 
 function handleProjectSelected(event) {
@@ -515,6 +532,32 @@ function handleProjectSelected(event) {
   // Load todos for the current project
   loadTodos();
 }
+
+// LOCAL STORAGE
+
+function serializeApp(appInstance) {
+  return JSON.stringify(appInstance);
+}
+
+function deserializeApp(appData) {
+  const parsedData = JSON.parse(appData);
+  return new App(parsedData);
+}
+
+function updateLocalStorage() {
+  localStorage.setItem("appData", serializeApp(appInstance));
+}
+
+function loadFromLocalStorage() {
+  const savedData = localStorage.getItem("appData");
+  if (savedData) {
+    appInstance = deserializeApp(savedData);
+  } else {
+    appInstance = new App();
+  }
+}
+
+loadFromLocalStorage();
 
 export default {
   renderPage,

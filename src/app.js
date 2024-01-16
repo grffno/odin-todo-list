@@ -3,10 +3,18 @@ import Todo from "./todo";
 import Project from "./project";
 
 class App {
-  constructor() {
-    this.projects = [];
-    this.currentProject = null;
-    this.currentId = 0;
+  constructor(initData) {
+    if (initData) {
+      this.projects = initData.projects.map(
+        (proj) => new Project(proj.name, proj.todos)
+      );
+      this.currentProject = this.getProject(initData.currentProject?.name);
+      this.currentId = initData.currentId;
+    } else {
+      this.projects = [];
+      this.currentProject = null;
+      this.currentId = 0;
+    }
   }
 
   getNewId() {

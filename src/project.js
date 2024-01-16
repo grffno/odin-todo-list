@@ -1,7 +1,12 @@
+import Todo from "./todo";
+
 class Project {
-  constructor(name) {
+  constructor(name, todos = []) {
     this.name = name;
-    this.todos = [];
+    this.todos = todos.map(
+      (todo) =>
+        new Todo(todo.id, todo.title, todo.notes, todo.dueDate, todo.priority)
+    );
   }
 
   addTodo(todo) {
